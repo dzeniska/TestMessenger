@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "182544875622",
+    "project_id": "testmessenger-d5c74",
+    "storage_bucket": "testmessenger-d5c74.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:182544875622:android:4e2c7b1b69720875692da7",
+        "android_client_info": {
+          "package_name": "com.dzenis_ska.testmessenger"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "182544875622-iq2q774cjk66f66k45c0nocv3fagp487.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dzenis_ska.testmessenger",
+            "certificate_hash": "b1b00e745926a13f3e3d86e256ae35091c115a58"
+          }
+        },
+        {
+          "client_id": "182544875622-c38v47sob97er2kkmpgd91ab5ggvn3oh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAugomYoer3OigWirHwQLcPrYsZySoaRjo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "182544875622-c38v47sob97er2kkmpgd91ab5ggvn3oh.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,44 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.TestMessenger" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/white</item>
+        <item name="colorPrimaryVariant">@color/purple_700</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/teal_200</item>
+        <item name="colorSecondaryVariant">@color/teal_700</item>
+        <item name="colorOnSecondary">@color/black</item>
+        <item name="android:statusBarColor" tools:targetApi="l">@color/theme_color</item>
+        <item name="android:navigationBarColor">@color/theme_color</item>
+        <item name="textAllCaps">false</item>
+        <item name="colorControlNormal">#fff</item>
+        <item name="android:itemTextAppearance">@style/myCustomMenuTextAppearance</item>
+    </style>
+
+    <style name="SplashActivity" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="android:windowBackground">@drawable/splash</item>
+        <item name="android:windowTranslucentStatus">true</item>
+        <item name="android:windowTranslucentNavigation">true</item>
+        <item name="android:navigationBarColor">@color/transparent</item>
+
+    </style>
+
+    <!-- change item menu textColor-->
+    <style name="myCustomMenuTextAppearance" parent="@android:style/TextAppearance.Widget.IconMenu.Item">
+        <item name="android:textColor">@color/theme_color</item>
+    </style>
+
+
+   <!-- <style name="GlobalButtonStyle" parent="Widget.MaterialComponents.Button">
+        <item name="android:minWidth">200dp</item>
+    </style>
+    &lt;!&ndash;<style name="GlobalButtonStyle" parent="Widget.MaterialComponents.Button">
+        <item name="android:layout_marginStart">8dp</item>
+        <item name="android:layout_marginEnd">8dp</item>
+    </style>&ndash;&gt;
+    <style name="GlobalEditTextStyle" parent="Widget.MaterialComponents.TextView">
+        <item name="minWidth">@dimen/min_width_buttons</item>
+        <item name="android:layout_marginStart">8dp</item>
+        <item name="android:layout_marginEnd">8dp</item>
+    </style>-->
+
+</resources>

@@ -1,0 +1,10 @@
+<resources>
+    <dimen name="message_radius">12dp</dimen>
+    <dimen name="accept_decline_radius">8dp</dimen>
+    <dimen name="message_radius_user">36dp</dimen>
+    <dimen name="min_width_buttons">200dp</dimen>
+    <dimen name="margin_start_end">24dp</dimen>
+    <dimen name="margin_top_bottom">16dp</dimen>
+    <dimen name="margin">16dp</dimen>
+    <dimen name="button_height">18dp</dimen>
+</resources>

@@ -1,0 +1,24 @@
+<resources>
+    <string name="app_name">TestMessenger</string>
+    <string name="messenger">Messenger</string>
+
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="sign_in">Sign In</string>
+    <string name="email">Email…</string>
+    <string name="password">Password…</string>
+    <string name="done">Done</string>
+    <string name="name">Name…</string>
+    <string name="enter_name">Enter name</string>
+    <string name="enter_message">Enter message…</string>
+    <string name="dialogs">Dialogs</string>
+    <string name="invitations">Invitations</string>
+    <string name="invite">Invite</string>
+    <string name="invite_member">Invite Member</string>
+    <string name="home">Home</string>
+    <string name="forInviteText">Enter email of member you \n want to invite</string>
+
+    <string name="email_add">Подтвердите регистрацию по Email и нажмите \"войти\"</string>
+    <string name="email_no_add">Ошибка отправки подтверждения регистрации по Email!</string>
+    <string name="decline">Decline</string>
+    <string name="accept">Accept</string>
+</resources>

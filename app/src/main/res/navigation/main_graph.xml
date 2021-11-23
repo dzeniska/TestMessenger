@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_graph"
+    app:startDestination="@id/homeFragment">
+    <fragment
+        android:id="@+id/signInFragment"
+        android:name="com.dzenis_ska.testmessenger.ui.fragments.SignInFragment"
+        android:label="fragment_sign_in"
+        tools:layout="@layout/fragment_sign_in" >
+        <action
+            android:id="@+id/action_signInFragment_to_enterNameFragment"
+            app:destination="@id/enterNameFragment" />
+        <argument
+            android:name="isLogOut"
+            app:argType="boolean"
+            android:defaultValue="false" />
+
+    </fragment>
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.dzenis_ska.testmessenger.ui.fragments.HomeFragment"
+        android:label="fragment_home"
+        tools:layout="@layout/fragment_home" >
+        <action
+            android:id="@+id/action_homeFragment_to_inviteMemberFragment"
+            app:destination="@id/inviteMemberFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_tabs_graph"
+            app:destination="@id/tabs_graph" />
+        <action
+            android:id="@+id/action_homeFragment_to_userNameFragment"
+            app:destination="@id/userNameFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_signInFragment"
+            app:destination="@id/signInFragment" />
+
+    </fragment>
+    <fragment
+        android:id="@+id/inviteMemberFragment"
+        android:name="com.dzenis_ska.testmessenger.ui.fragments.InviteMemberFragment"
+        android:label="InviteMemberFragment"
+        tools:layout="@layout/fragment_invite_member">
+        <argument
+            android:name="email"
+            app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/userNameFragment"
+        android:name="com.dzenis_ska.testmessenger.ui.fragments.UserNameFragment"
+        android:label="UserNameFragment"
+        tools:layout="@layout/fragment_user_name">
+        <argument
+            android:name="message"
+            app:argType="com.dzenis_ska.testmessenger.db.Dialog" />
+    </fragment>
+    <fragment
+        android:id="@+id/enterNameFragment"
+        android:name="com.dzenis_ska.testmessenger.ui.fragments.EnterNameFragment"
+        android:label="fragment_enter_name"
+        tools:layout="@layout/fragment_enter_name" >
+        <action
+            android:id="@+id/action_enterNameFragment_to_homeFragment"
+            app:destination="@id/homeFragment" />
+    </fragment>
+    <include app:graph="@navigation/tabs_graph" />
+</navigation>
