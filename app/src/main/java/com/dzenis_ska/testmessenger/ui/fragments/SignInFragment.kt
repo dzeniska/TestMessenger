@@ -69,8 +69,8 @@ class SignInFragment : Fragment(R.layout.fragment_sign_in) {
                         } else {
                             findNavController().navigate(R.id.homeFragment, null,
                                 navOptions {
-                                    popUpTo(R.id.homeFragment){
-                                        inclusive = false
+                                    popUpTo(R.id.signInFragment){
+                                        inclusive = true
                                     }
                                 })
                             Toast.makeText(context, mess, Toast.LENGTH_LONG).show()

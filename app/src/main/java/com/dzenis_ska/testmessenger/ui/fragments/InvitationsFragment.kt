@@ -53,7 +53,7 @@ class InvitationsFragment : Fragment(R.layout.fragment_invitations) {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        adapter?.users = emptyList()
+        vm.clearInvUsersList()
         binding = null
     }
 

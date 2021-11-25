@@ -4,6 +4,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.dzenis_ska.testmessenger.databinding.ItemDialogsBinding
@@ -54,6 +55,18 @@ class DialogsAdapter(private val chooseUserInterface: ChooseUserInterface ) : Re
             tvUName.text = dialog.name
 
             tvUEmail.text = dialog.email
+
+            val countUnreadMess = dialog.countUnreadMess.toString()
+            if(countUnreadMess.toInt() < 1){
+                tvCountUnreadMess.isVisible = false
+            } else if(countUnreadMess.toInt() < 10){
+                tvCountUnreadMess.isVisible = true
+                tvCountUnreadMess.text = dialog.countUnreadMess.toString()
+            } else {
+                tvCountUnreadMess.isVisible = true
+                tvCountUnreadMess.text = "+9"
+            }
+
 
             val sdf = SimpleDateFormat("HH:mm")
             val resultDate = Date(dialog.time.toLong())

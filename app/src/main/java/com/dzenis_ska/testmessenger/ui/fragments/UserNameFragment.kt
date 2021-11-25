@@ -1,7 +1,5 @@
 package com.dzenis_ska.testmessenger.ui.fragments
 
-import android.graphics.Bitmap
-import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -11,6 +9,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
+import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.navArgs
@@ -20,16 +19,20 @@ import com.dzenis_ska.testmessenger.databinding.FragmentUserNameBinding
 import com.dzenis_ska.testmessenger.db.Messages
 import com.dzenis_ska.testmessenger.ui.MainApp
 import com.dzenis_ska.testmessenger.ui.activities.ViewModelMain
+import com.dzenis_ska.testmessenger.ui.adapters.EditMessage
 import com.dzenis_ska.testmessenger.ui.adapters.MessageAdapter
 import com.dzenis_ska.testmessenger.utils.ImageManager
 import com.squareup.picasso.Picasso
 import kotlinx.coroutines.*
-import java.io.ByteArrayOutputStream
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 
 class UserNameFragment : Fragment(R.layout.fragment_user_name) {
+
+    var changeText = 0
+
+    var editMess: Messages.MyMessage? = null
 
     var uri: Uri? = null
 
@@ -62,9 +65,16 @@ class UserNameFragment : Fragment(R.layout.fragment_user_name) {
         initUI()
         initListMess()
         initVM()
-
+        initTextChanged()
         showPhoto()
 
+    }
+
+    private fun initTextChanged() = with(binding!!){
+        etMessage.addTextChangedListener {
+
+            Log.d("!!!textChangedListener", "${it}")
+        }
     }
 
     private fun showPhoto() {
@@ -148,25 +158,60 @@ class UserNameFragment : Fragment(R.layout.fragment_user_name) {
             pickImage?.launch(MIMETYPE_IMAGES)
         }
         imbSendMessage.setOnClickListener {
-            clickSend()
+            if(changeText == EDIT_MESS) {
+                clickEditText()
+            } else {
+                clickSend()
+            }
+        }
+    }
+
+    private fun clickEditText() = with(binding!!){
+        if(etMessage.text.isNotEmpty()) viewModelMain.editText(etMessage.text.toString(), editMess, args){
+            if(it){
+                etMessage.text.clear()
+                changeText = 0
+            }
+            if(!it) Toast.makeText(context, "Error!", Toast.LENGTH_LONG).show()
+        }
+    }
+    private fun clickDeleteText(message: Messages.MyMessage) {
+        viewModelMain.deleteText( message, args){
+            if(!it) Toast.makeText(context, "Error!", Toast.LENGTH_LONG).show()
+            else Toast.makeText(context, "Deleted!!", Toast.LENGTH_LONG).show()
         }
     }
 
     private fun clickSend() = with(binding!!){
-        val time = System.currentTimeMillis().toString()
-        if(!ivImage.isVisible){
-            sendMess(null, time)
-        } else {
+
+        if(changeText == EDIT_PHOTO) {
             prBarImage.isVisible = true
             job = CoroutineScope(Dispatchers.Main).launch {
                 val byteArray = photoFromImageView()
-                viewModelMain.uploadImage(byteArray, time) {
+                viewModelMain.reselectImage(byteArray, editMess!!, args) {
                     prBarImage.isVisible = false
-                    sendMess(it, time)
+                    ivImage.isVisible = false
+                    changeText = 0
+                }
+            }
+        } else {
+            val time = System.currentTimeMillis().toString()
+            if(!ivImage.isVisible){
+                sendMess(null, time)
+            } else {
+                prBarImage.isVisible = true
+                job = CoroutineScope(Dispatchers.Main).launch {
+                    val byteArray = photoFromImageView()
+                    viewModelMain.uploadImage(byteArray, time) {
+                        prBarImage.isVisible = false
+                        sendMess(it, time)
+                    }
                 }
             }
         }
     }
+
+
 
     private suspend fun photoFromImageView(): ByteArray = withContext(Dispatchers.IO) {
 //        val bitmap = (binding!!.ivImage.drawable as BitmapDrawable).bitmap
@@ -190,7 +235,7 @@ class UserNameFragment : Fragment(R.layout.fragment_user_name) {
         }
 
     }
-    private fun subSendMess(photoUrl: Uri?, time: String) = with(binding!!){
+    private fun subSendMess(photoUrl: Uri?, time: String) = with(binding!!) {
         prBarMess.isVisible = true
         viewModelMain.sendMessage(etMessage.text.toString(), args, photoUrl, time) {
             if (it) Toast.makeText(context, "Ok!", Toast.LENGTH_LONG).show()
@@ -204,7 +249,31 @@ class UserNameFragment : Fragment(R.layout.fragment_user_name) {
     private fun initUI() = with(binding!!) {
         tvToolbar.text = args.message.name
         val layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, true)
-        adapter = MessageAdapter()
+        adapter = MessageAdapter(object : EditMessage{
+            override fun editMessage(message: Messages.MyMessage) {
+                editMess = message
+                etMessage.setText(message.message)
+                changeText = EDIT_MESS
+            }
+
+            override fun deleteMessage(message: Messages.MyMessage) {
+                clickDeleteText(message)
+            }
+
+            override fun editPhoto(message: Messages.MyMessage) {
+                changeText = EDIT_PHOTO
+                editMess = message
+                pickImage?.launch(MIMETYPE_IMAGES)
+            }
+
+            override fun deletePhoto(message: Messages.MyMessage) {
+                viewModelMain.deletePhoto(message, args){
+                    etMessage.text.clear()
+                    if (it) Toast.makeText(context, "Photo deleted!", Toast.LENGTH_LONG).show()
+                    else Toast.makeText(context, "Error!", Toast.LENGTH_LONG).show()
+                }
+            }
+        })
         rcViewMessage.layoutManager = layoutManager
         rcViewMessage.adapter = adapter
     }
@@ -212,12 +281,15 @@ class UserNameFragment : Fragment(R.layout.fragment_user_name) {
     override fun onDestroyView() {
         super.onDestroyView()
         viewModelMain.cancelListenerMess(args)
-        adapter?.messages?.clear()
+        viewModelMain.clearListMess()
         binding = null
     }
 
     companion object {
         const val MIMETYPE_IMAGES = "image/*"
+
+        const val EDIT_MESS = 1
+        const val EDIT_PHOTO = 2
     }
 
 }

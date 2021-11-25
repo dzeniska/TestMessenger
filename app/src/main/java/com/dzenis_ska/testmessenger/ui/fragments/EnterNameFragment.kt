@@ -38,7 +38,12 @@ class EnterNameFragment : Fragment(R.layout.fragment_enter_name) {
                 etName.isClickable = false
                 viewModelMain.setName(etName.text.toString()) {name, isName ->
                     if(isName == true) {
-                        findNavController().navigate(R.id.homeFragment)
+                        findNavController().navigate(R.id.homeFragment, null, navOptions {
+                            popUpTo(R.id.enterNameFragment){
+                                inclusive = true
+                            }
+
+                        })
                         Toast.makeText(context, "Hello, $name!", Toast.LENGTH_LONG).show()
                     }else{
                         etName.isClickable = true

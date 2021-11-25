@@ -26,6 +26,25 @@ class ViewModelMain(private val auth: FBAuth, private val fbFirestore: FBFiresto
 
     val fa = auth.auth
 
+
+
+    fun reselectImage(byteArray: ByteArray, editMess: Messages.MyMessage, args: UserNameFragmentArgs, callback: (isRewrite: Boolean?) -> Unit) {
+        getCurUser()?.let { fbFirestore.reselectImage(byteArray, editMess, args.message){isRIm-> callback(isRIm)} }
+    }
+
+
+    fun deletePhoto(messageForDelPhoto: Messages.MyMessage, args: UserNameFragmentArgs, callback: (isPhotoDel: Boolean) -> Unit) {
+        getCurUser()?.let { fbFirestore.deletePhoto(messageForDelPhoto, args.message){callback(it)} }
+    }
+
+    fun deleteText(editMess: Messages.MyMessage, args: UserNameFragmentArgs, callback: (isDelete: Boolean) -> Unit) {
+        getCurUser()?.let { fbFirestore.deleteText(editMess, args.message){callback(it)} }
+    }
+
+    fun editText(editText: String, editMess: Messages.MyMessage?, args: UserNameFragmentArgs, callback: (isEdit: Boolean) -> Unit) {
+        getCurUser()?.let { fbFirestore.editText(editText, editMess, args.message){callback(it)} }
+    }
+
     fun uploadImage(biteArray: ByteArray, time: String, callback: (uri: Uri?) -> Unit) {
         fbFirestore.uploadImage(biteArray, time){uri->
             callback(uri)
@@ -43,6 +62,10 @@ class ViewModelMain(private val auth: FBAuth, private val fbFirestore: FBFiresto
         }
     }
 
+    fun clearListMess(){
+        _listMess.value = arrayListOf()
+    }
+
     fun cancelListenerMess(args: UserNameFragmentArgs) {
         fbFirestore.cancelListenerMess(args.message)
     }
@@ -53,12 +76,22 @@ class ViewModelMain(private val auth: FBAuth, private val fbFirestore: FBFiresto
         }
     }
 
+    fun decrementMess(message: Dialog){
+        getCurUser()?.let {
+            fbFirestore.decrementMess(message, it)
+        }
+    }
+
     fun getDialogsList() {
         getCurUser()?.let {
             fbFirestore.getDialogsList(it) {
                 _listDialogs.value = it
             }
         }
+    }
+
+    fun clearDialogList(){
+        _listDialogs.value = arrayListOf()
     }
 
     fun createDialog(user: User, callback: (isCreate: Boolean) -> Unit) {
@@ -96,13 +129,15 @@ class ViewModelMain(private val auth: FBAuth, private val fbFirestore: FBFiresto
 
     fun listInviting() {
         getCurUser()?.let {
-
             fbFirestore.listInviting(it.email) {
                 _invUsers.value = it
             }
         }
     }
 
+    fun clearInvUsersList(){
+        _invUsers.value = mutableListOf()
+    }
 
     //authentication
 
@@ -130,6 +165,8 @@ class ViewModelMain(private val auth: FBAuth, private val fbFirestore: FBFiresto
             callback(name, it)
         }
     }
+
+
 
 
     class MainViewModelFactory(private val auth: FBAuth, private val fbFirestore: FBFirestore) :

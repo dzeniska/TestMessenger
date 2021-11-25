@@ -8,5 +8,6 @@ class Dialog(
     val name: String,
     val email: String,
     val time: String,
-    val dialogName: String
+    val dialogName: String,
+    val countUnreadMess: Int
 ): Parcelable

@@ -1,10 +1,8 @@
 package com.dzenis_ska.testmessenger.ui.adapters
 
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import androidx.core.net.toUri
+import android.view.*
+import android.widget.PopupMenu
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
@@ -13,16 +11,20 @@ import com.dzenis_ska.testmessenger.R
 import com.dzenis_ska.testmessenger.databinding.ItemAdapterApponentMessageBinding
 import com.dzenis_ska.testmessenger.databinding.ItemAdapterMyMessageBinding
 import com.dzenis_ska.testmessenger.databinding.ItemAdapterTimeBinding
-import com.dzenis_ska.testmessenger.db.Dialog
 import com.dzenis_ska.testmessenger.db.Messages
 import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
-import java.lang.Exception
 import java.text.SimpleDateFormat
 import java.util.*
 
+interface EditMessage {
+    fun editMessage(message: Messages.MyMessage)
+    fun deleteMessage(message: Messages.MyMessage)
+    fun editPhoto(message: Messages.MyMessage)
+    fun deletePhoto(message: Messages.MyMessage)
+}
 
-class MessageAdapter() : RecyclerView.Adapter<MessageAdapter.MessageViewHolder>() {
+class MessageAdapter(private val editMessage: EditMessage) : RecyclerView.Adapter<MessageAdapter.MessageViewHolder>(), View.OnLongClickListener {
 
     var messages: MutableList<Messages> = mutableListOf()
         set(newValue) {
@@ -34,6 +36,17 @@ class MessageAdapter() : RecyclerView.Adapter<MessageAdapter.MessageViewHolder>(
             notifyDataSetChanged()
         }
 
+    override fun onLongClick(v: View): Boolean{
+        when (v.id) {
+            R.id.ivImageMessMy -> {
+                showPopupMenuPhoto(v)
+            }
+            R.id.tvMessageMy -> {
+                showPopupMenu(v)
+            }
+        }
+        return true
+    }
 
 
     override fun getItemCount(): Int = messages.size
@@ -46,21 +59,42 @@ class MessageAdapter() : RecyclerView.Adapter<MessageAdapter.MessageViewHolder>(
             HIS_MESSAGE -> ItemAdapterApponentMessageBinding.inflate(inflater, parent, false)
             else -> throw IllegalArgumentException("Invalid view type")
         }
+
+        binding.root.setOnLongClickListener(this)
+
+
         return MessageViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: MessageViewHolder, position: Int) {
 
         val message = messages[position]
+
+
+
         with(holder) {
             when (message){
                 is Messages.MyMessage -> {
                     binding as ItemAdapterMyMessageBinding
-                    if(message.message?.isNotEmpty() == true){
-                        binding.tvMessage.isVisible = true
-                        binding.tvMessage.text = message.message
+                    if(!message.isRead){
+                        binding.tvMessageMy.tag = message
+                        binding.tvMessageMy.setOnLongClickListener(this@MessageAdapter)
+                        binding.ivImageMessMy.tag = message
+                        binding.ivImageMessMy.setOnLongClickListener(this@MessageAdapter)
+//                        binding.root.tag = message
                     } else {
-                        binding.tvMessage.isVisible = false
+                        binding.tvMessageMy.tag = null
+                        binding.tvMessageMy.setOnLongClickListener(this@MessageAdapter)
+                        binding.ivImageMessMy.tag = null
+                        binding.ivImageMessMy.setOnLongClickListener(this@MessageAdapter)
+
+                    }
+
+                    if(message.message?.isNotEmpty() == true){
+                        binding.tvMessageMy.isVisible = true
+                        binding.tvMessageMy.text = message.message
+                    } else {
+                        binding.tvMessageMy.isVisible = false
                     }
                     val sdf = SimpleDateFormat("HH:mm")
                     val resultDate = Date(message.time.toLong())
@@ -75,7 +109,7 @@ class MessageAdapter() : RecyclerView.Adapter<MessageAdapter.MessageViewHolder>(
 
                     if(message.photoUrl != "null"){
                         binding.progressBar.isVisible = true
-                        binding.ivImageMess.isVisible = true
+                        binding.ivImageMessMy.isVisible = true
 
                         Log.d("!!!loadImage", "${message.photoUrl}")
 
@@ -83,7 +117,7 @@ class MessageAdapter() : RecyclerView.Adapter<MessageAdapter.MessageViewHolder>(
                             .load(message.photoUrl)
                             .placeholder(R.drawable.ic_image_300_300)
                             .error(R.drawable.ic_no_connection)
-                            .into(binding.ivImageMess, object : Callback{
+                            .into(binding.ivImageMessMy, object : Callback{
                                 override fun onSuccess() {
                                     binding.progressBar.isVisible = false
                                 }
@@ -93,7 +127,7 @@ class MessageAdapter() : RecyclerView.Adapter<MessageAdapter.MessageViewHolder>(
                             })
                     } else {
                         binding.progressBar.isVisible = false
-                        binding.ivImageMess.visibility = View.GONE
+                        binding.ivImageMessMy.visibility = View.GONE
                     }
 
 
@@ -154,10 +188,64 @@ class MessageAdapter() : RecyclerView.Adapter<MessageAdapter.MessageViewHolder>(
         }
     }
 
+    private fun showPopupMenu(v: View){
+        Log.d("!!!popup", "${v.tag}")
+        var message: Messages.MyMessage? = null
+        val popupMenu = PopupMenu(v.context, v, Gravity.CENTER)
+        if(v.tag == null){
+            popupMenu.menu.add(0, NO_DELETE, Menu.NONE, "Sorry!)")
+        } else {
+            message = v.tag as Messages.MyMessage
+            popupMenu.menu.add(0, EDIT, Menu.NONE, "Edit")
+            popupMenu.menu.add(0, DELETE, Menu.NONE, "Delete")
+        }
+        popupMenu.setOnMenuItemClickListener {
+            when(it.itemId){
+                EDIT -> {
+                    editMessage.editMessage(message!!)
+                }
+                DELETE -> {
+                    editMessage.deleteMessage(message!!)
+                }
+            }
+            return@setOnMenuItemClickListener true
+        }
+        popupMenu.show()
+    }
+    private fun showPopupMenuPhoto(v: View){
+        var message: Messages.MyMessage? = null
+        val popupMenu = PopupMenu(v.context, v, Gravity.CENTER)
+        if(v.tag == null){
+            popupMenu.menu.add(0, NO_DELETE, Menu.NONE, "Sorry!)")
+        } else {
+            message = v.tag as Messages.MyMessage
+            popupMenu.menu.add(0, EDIT, Menu.NONE, "Edit Photo")
+            popupMenu.menu.add(0, DELETE, Menu.NONE, "Delete Photo")
+        }
+        popupMenu.setOnMenuItemClickListener {
+            when(it.itemId){
+                EDIT -> {
+                    editMessage.editPhoto(message!!)
+                }
+                DELETE -> {
+                    editMessage.deletePhoto(message!!)
+                }
+            }
+            return@setOnMenuItemClickListener true
+        }
+        popupMenu.show()
+    }
+
     companion object {
-        private const val MY_MESSAGE = 0
-        private const val TIME_SPACE = 1
-        private const val HIS_MESSAGE = 2
+        private const val MY_MESSAGE = 10
+        private const val TIME_SPACE = 20
+        private const val HIS_MESSAGE = 30
+
+        private const val EDIT = 1
+        private const val DELETE = 2
+        private const val NO_DELETE = 3
+
 
     }
+
 }

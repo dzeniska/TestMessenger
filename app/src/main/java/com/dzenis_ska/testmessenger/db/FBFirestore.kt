@@ -25,6 +25,93 @@ class FBFirestore(private val mainApp: MainApp) {
     //Authentication
     val auth = Firebase.auth
 
+    fun reselectImage(byteArray: ByteArray, editPhoto: Messages.MyMessage, dialog: Dialog, callback: (isRewrite: Boolean) -> Unit) {
+
+        st.reference.child(ViewModelMain.PHOTO)
+            .child(editPhoto.time)
+            .delete()
+            .addOnSuccessListener {
+                st.reference.child(ViewModelMain.PHOTO).child(editPhoto.time).putBytes(byteArray)
+                    .addOnSuccessListener {
+                        getPhotoUrl(editPhoto.time) {
+                            rewriteUrl(it,editPhoto, dialog){callback(it)}
+                        }
+                    }.addOnFailureListener {
+                        callback(false)
+                    }
+            }.addOnFailureListener {
+                callback(false)
+            }
+    }
+
+    private fun rewriteUrl(uri: Uri?, editPhoto: Messages.MyMessage, dialog: Dialog, callback: (isRewrite: Boolean) -> Unit) {
+        db.collection(ViewModelMain.DIALOGS)
+            .document(dialog.dialogName)
+            .collection(dialog.dialogName)
+            .document(editPhoto.time)
+            .update("photoUrl", uri.toString())
+            .addOnSuccessListener { callback(true) }
+            .addOnFailureListener { callback(false) }
+    }
+
+
+    fun deletePhoto(messageForDelPhoto: Messages.MyMessage, message: Dialog, callback: (isPhotoDel: Boolean) -> Unit) {
+
+        st.reference.child(ViewModelMain.PHOTO)
+            .child(messageForDelPhoto.time)
+            .delete()
+            .addOnSuccessListener {
+                if(messageForDelPhoto.message.isNullOrEmpty())
+                db.collection(ViewModelMain.DIALOGS)
+                    .document(message.dialogName)
+                    .collection(message.dialogName)
+                    .document(messageForDelPhoto.time)
+                    .delete()
+                    .addOnSuccessListener { callback(true) }
+                    .addOnFailureListener { callback(false) }
+                else
+                    db.collection(ViewModelMain.DIALOGS)
+                        .document(message.dialogName)
+                        .collection(message.dialogName)
+                        .document(messageForDelPhoto.time)
+                        .update("photoUrl", "null")
+                        .addOnSuccessListener { callback(true) }
+                        .addOnFailureListener { callback(false) }
+
+            }
+            .addOnFailureListener { callback(false) }
+
+    }
+
+    fun deleteText(editMess: Messages.MyMessage, message: Dialog, callback: (isDelete: Boolean) -> Unit) {
+        if(editMess.photoUrl.toString() == "null")
+        db.collection(ViewModelMain.DIALOGS)
+            .document(message.dialogName)
+            .collection(message.dialogName)
+            .document(editMess.time)
+            .delete()
+            .addOnSuccessListener { callback(true) }
+            .addOnFailureListener { callback(false) }
+        else
+            db.collection(ViewModelMain.DIALOGS)
+                .document(message.dialogName)
+                .collection(message.dialogName)
+                .document(editMess.time)
+                .update("message", "")
+                .addOnSuccessListener { callback(true) }
+                .addOnFailureListener { callback(false) }
+
+    }
+
+    fun editText(editText: String, editMess: Messages.MyMessage?, message: Dialog, callback: (isInvite: Boolean) -> Unit) {
+        db.collection(ViewModelMain.DIALOGS)
+            .document(message.dialogName)
+            .collection(message.dialogName)
+            .document(editMess!!.time)
+            .update("message", editText)
+            .addOnSuccessListener { callback(true) }
+            .addOnFailureListener { callback(false) }
+    }
 
     fun uploadImage(biteArray: ByteArray, time: String, callback: (uri: Uri?) -> Unit) {
         st.reference.child(ViewModelMain.PHOTO).child(time).putBytes(biteArray)
@@ -96,16 +183,60 @@ class FBFirestore(private val mainApp: MainApp) {
         registration.remove()
     }
 
-    fun sendMessage(text: String, it: User, message: Dialog, photoUrl: Uri?, time: String, callback: (isSend: Boolean) -> Unit) {
+    fun editMessage(text: String, user: User, message: Dialog, photoUrl: Uri?, time: String){
+        db.collection(ViewModelMain.DIALOGS)
+            .document(message.dialogName)
+            .collection(message.dialogName)
+            .document(time)
+    }
 
-        val mes = Messages.MyMessage(it.name, it.email, text, false, time, photoUrl.toString())
+    fun sendMessage(text: String, user: User, message: Dialog, photoUrl: Uri?, time: String, callback: (isSend: Boolean) -> Unit) {
+
+        val mes = Messages.MyMessage(
+            user.name,
+            user.email,
+            text,
+            false,
+            time,
+            photoUrl.toString()
+        )
+
+
         db.collection(ViewModelMain.DIALOGS)
             .document(message.dialogName)
             .collection(message.dialogName)
             .document(time)
             .set(mes)
-            .addOnSuccessListener { callback(true) }
+            .addOnSuccessListener {
+                incrementMess(message, user)
+                sendTimeForSortDialogs(message, user, time)
+                callback(true)
+            }
             .addOnFailureListener { callback(false) }
+    }
+
+    private fun sendTimeForSortDialogs(message: Dialog, user: User, time: String) {
+        db.collection(ViewModelMain.USERS)
+            .document(message.email)
+            .collection(ViewModelMain.DIALOGS)
+            .document(user.email)
+            .update("time", time)
+    }
+
+    private fun incrementMess(message: Dialog, user: User) {
+        db.collection(ViewModelMain.USERS)
+            .document(message.email)
+            .collection(ViewModelMain.DIALOGS)
+            .document(user.email)
+            .update("countUnreadMess", FieldValue.increment(1))
+    }
+
+    fun decrementMess(message: Dialog, user: User) {
+        db.collection(ViewModelMain.USERS)
+            .document(user.email)
+            .collection(ViewModelMain.DIALOGS)
+            .document(message.email)
+            .update("countUnreadMess", 0)
     }
 
     fun getDialogsList(myUser: User, callback: (listD: ArrayList<Dialog>) -> Unit) {
@@ -125,13 +256,38 @@ class FBFirestore(private val mainApp: MainApp) {
                             mes.get("name").toString(),
                             mes.get("email").toString(),
                             mes.get("time").toString(),
-                            mes.get("dialogName").toString()
+                            mes.get("dialogName").toString(),
+                            mes.get("countUnreadMess").toString().toInt()
                         )
                     )
                 }
                 callback(listDialogs)
+
+//                var dName: String? = null
+//                    result.forEach {
+//                    if(dName == null) dName = it.data.get("name").toString()
+//                        else return@forEach
+//                }
+//
+//                //todo
+//                if(dName != null){
+//                    db.collection(ViewModelMain.DIALOGS)
+//                        .document(dName!!)
+//                        .collection(dName!!)
+//                        .orderBy("time", Query.Direction.DESCENDING)
+//                        .whereEqualTo("isRead", true)
+//                        .limit(2L)
+//                        .get()
+//                        .addOnSuccessListener {
+//                            it.forEach {
+//
+//                            }
+//                        }
+//                }
             }
     }
+
+
 
 
     fun createDialog(myUser: User, user: User, callback: (isCreate: Boolean) -> Unit) {
@@ -141,13 +297,15 @@ class FBFirestore(private val mainApp: MainApp) {
             myUser.name,
             myUser.email,
             System.currentTimeMillis().toString(),
-            dialogName
+            dialogName,
+            0
         )
         val dialogHis = Dialog(
             user.name,
             user.email,
             System.currentTimeMillis().toString(),
-            dialogName
+            dialogName,
+            0
         )
 
         val dialogCollection = db.collection(ViewModelMain.DIALOGS)
@@ -302,6 +460,8 @@ class FBFirestore(private val mainApp: MainApp) {
                 Log.d("!!!isInv", "exception: ${exception}")
             }
     }
+
+
 
 
 //    fun getDialog2(myUser: User, callback: (listD: ArrayList<String>) -> Unit) {

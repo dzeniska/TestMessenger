@@ -46,7 +46,7 @@ class DialogsFragment : Fragment(R.layout.fragment_dialogs) {
             override fun chooseUser(message: Dialog) {
                 val direction = HomeFragmentDirections.actionHomeFragmentToUserNameFragment(message)
                 findTopNavController().navigate(direction)
-
+                viewModelMain.decrementMess(message)
                 Log.d("!!!click", "$message")
             }
         })
@@ -57,7 +57,7 @@ class DialogsFragment : Fragment(R.layout.fragment_dialogs) {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        adapter?.dialogs = emptyList()
+        viewModelMain.clearDialogList()
         binding = null
     }
 
