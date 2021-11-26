@@ -43,8 +43,7 @@ object ImageManager {
             }
         }
 
-    private suspend fun imageRotationNew(uri: Uri, act: FragmentActivity): Int =
-        withContext(Dispatchers.IO) {
+    fun imageRotationNew(uri: Uri, act: FragmentActivity): Int {
 
             val inStream = try {
                 act.contentResolver.openInputStream(uri)
@@ -53,7 +52,7 @@ object ImageManager {
             }
             val exif = inStream?.let { ExifInterface(it) }
 
-            return@withContext when (exif?.getAttributeInt(
+            return when (exif?.getAttributeInt(
                 ExifInterface.TAG_ORIENTATION,
                 ExifInterface.ORIENTATION_NORMAL
             )) {

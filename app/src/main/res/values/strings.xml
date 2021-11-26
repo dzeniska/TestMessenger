@@ -21,4 +21,6 @@
     <string name="email_no_add">Ошибка отправки подтверждения регистрации по Email!</string>
     <string name="decline">Decline</string>
     <string name="accept">Accept</string>
+    <string name="listInvite">Список отправленных приглашений</string>
+    <string name="listMyInvite">Мои приглашения</string>
 </resources>

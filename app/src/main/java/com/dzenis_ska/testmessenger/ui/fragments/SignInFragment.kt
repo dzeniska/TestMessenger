@@ -58,6 +58,7 @@ class SignInFragment : Fragment(R.layout.fragment_sign_in) {
             &&
             pass.length > 5
         ) {
+
             viewModelMain.signIn(email, pass) { mess->
                 if (mess == FBAuth.LUCKY_ENTER) {
                     val isEV = viewModelMain.isEmailVerified()
@@ -75,7 +76,6 @@ class SignInFragment : Fragment(R.layout.fragment_sign_in) {
                                 })
                             Toast.makeText(context, mess, Toast.LENGTH_LONG).show()
                         }
-
                     }else {
                         Toast.makeText(context, "Проверьте почтовый ящик, говорю!", Toast.LENGTH_LONG)
                             .show()

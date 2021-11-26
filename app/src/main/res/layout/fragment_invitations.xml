@@ -29,4 +29,15 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/rcViewInvite" />
 
+
+    <Spinner
+        android:id="@+id/spinner"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:padding="4dp"
+        android:background="@drawable/background_edit_text_invite"
+        app:layout_constraintBottom_toBottomOf="@+id/rcViewInvite"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:spinnerMode="dialog"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

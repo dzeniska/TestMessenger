@@ -28,16 +28,15 @@ class FBAuth(private val mainApp: MainApp) {
     }
 
 
-
-    fun setName(name: String, callback: (task: Boolean) -> Unit){
+    fun setName(name: String, callback: (task: Boolean) -> Unit) {
         val user = Firebase.auth.currentUser
         val profileUpdates = userProfileChangeRequest {
             displayName = name
         }
         user?.updateProfile(profileUpdates)?.addOnCompleteListener { task ->
-                callback(task.isSuccessful)
+            callback(task.isSuccessful)
             createFirstCollection()
-            }
+        }
     }
 
     fun getCurUser(): User? {

@@ -25,6 +25,49 @@ class FBFirestore(private val mainApp: MainApp) {
     //Authentication
     val auth = Firebase.auth
 
+    fun cancelListenerWriting(email: Dialog) {
+        val query = db.collection(ViewModelMain.USERS)
+            .document(email.email)
+        val registration = query.addSnapshotListener { snapshots, e -> }
+        registration.remove()
+    }
+
+    fun readWriting(email: Dialog, callback: (writing: String) -> Unit) {
+        db.collection(ViewModelMain.USERS)
+            .document(email.email)
+            .addSnapshotListener { value, error ->
+                callback(value?.get("writing").toString())
+            }
+    }
+
+    fun writing(curUser: User, writing: String) {
+        db.collection(ViewModelMain.USERS)
+            .document(curUser.email)
+            .update("writing", writing)
+    }
+
+    fun renameUser(name: String, it: User, callback: (isRename: Boolean) -> Unit) {
+        val myEmail = it.email
+        db.collection(ViewModelMain.USERS)
+            .get()
+            .addOnSuccessListener {
+                val list = arrayListOf<String>()
+                it.documents.forEach {email->
+                    list.add(email.data?.get("email").toString())
+                }
+
+                list.forEach { email->
+                    Log.d("!!!changeName", "${ViewModelMain.USERS} \n ${email} \n ${ViewModelMain.USERS} \n ${myEmail}")
+                    db.collection(ViewModelMain.USERS)
+                        .document(email)
+                        .collection(ViewModelMain.DIALOGS)
+                        .document(myEmail)
+                        .update("name", name)
+                }
+                callback(true)
+            }.addOnFailureListener { callback(false) }
+    }
+
     fun reselectImage(byteArray: ByteArray, editPhoto: Messages.MyMessage, dialog: Dialog, callback: (isRewrite: Boolean) -> Unit) {
 
         st.reference.child(ViewModelMain.PHOTO)
@@ -183,12 +226,6 @@ class FBFirestore(private val mainApp: MainApp) {
         registration.remove()
     }
 
-    fun editMessage(text: String, user: User, message: Dialog, photoUrl: Uri?, time: String){
-        db.collection(ViewModelMain.DIALOGS)
-            .document(message.dialogName)
-            .collection(message.dialogName)
-            .document(time)
-    }
 
     fun sendMessage(text: String, user: User, message: Dialog, photoUrl: Uri?, time: String, callback: (isSend: Boolean) -> Unit) {
 
@@ -241,7 +278,7 @@ class FBFirestore(private val mainApp: MainApp) {
 
     fun getDialogsList(myUser: User, callback: (listD: ArrayList<Dialog>) -> Unit) {
         val listDialogs = arrayListOf<Dialog>()
-        val getDialogCollection = db.collection(ViewModelMain.USERS)
+        db.collection(ViewModelMain.USERS)
             .document(myUser.email)
             .collection(ViewModelMain.DIALOGS)
             .orderBy("time", Query.Direction.DESCENDING)
@@ -262,28 +299,6 @@ class FBFirestore(private val mainApp: MainApp) {
                     )
                 }
                 callback(listDialogs)
-
-//                var dName: String? = null
-//                    result.forEach {
-//                    if(dName == null) dName = it.data.get("name").toString()
-//                        else return@forEach
-//                }
-//
-//                //todo
-//                if(dName != null){
-//                    db.collection(ViewModelMain.DIALOGS)
-//                        .document(dName!!)
-//                        .collection(dName!!)
-//                        .orderBy("time", Query.Direction.DESCENDING)
-//                        .whereEqualTo("isRead", true)
-//                        .limit(2L)
-//                        .get()
-//                        .addOnSuccessListener {
-//                            it.forEach {
-//
-//                            }
-//                        }
-//                }
             }
     }
 
@@ -330,32 +345,22 @@ class FBFirestore(private val mainApp: MainApp) {
                     }.addOnFailureListener { callback(false) }
             }.addOnFailureListener { callback(false) }
 
-
-//            val time = System.currentTimeMillis().toString()
-//        dialogCollection.update(hashMapOf<String, Any>("timeStamp" to time))
-
-
-//        val dialogCollection = db.collection(ViewModelMain.DIALOGS)
-//            .document("Fghy1Ht3O7U8zXiKE0RY").get().addOnSuccessListener { doc->
-//                Log.d("!!!isInvite", "exceptionIF: ${doc.get("timeStamp")}")
-//                val stamp: Timestamp =
-//                stamp.timestamp = doc.get("timeStamp")
-//
-//
-//                val date = Date(stamp.timestamp)
-//                println(date)
-//
-//
-//            }
-
     }
 
     fun declineUser(myEmail: String, user: User, callback: (user: User) -> Unit) {
-        Log.d("!!!isInvite", "exceptionIF: ${myEmail} _ ${user.uid}")
+
         val mainColl = db.collection(ViewModelMain.USERS)
             .document(myEmail)
 
-        mainColl.update("forInvite", FieldValue.arrayRemove(user)).addOnCompleteListener { task ->
+        mainColl.update("forInvite", FieldValue.arrayRemove(user)).addOnSuccessListener { task ->
+            db.collection(ViewModelMain.USERS)
+                .document(user.email)
+                .update("invite", FieldValue.arrayRemove(myEmail))
+                .addOnSuccessListener {
+//                    db.collection(ViewModelMain.USERS)
+//                        .document(user.email)
+//                        .update("forInvite", FieldValue.arrayRemove(user))
+                }
             callback(user)
         }
     }
@@ -405,12 +410,27 @@ class FBFirestore(private val mainApp: MainApp) {
 
     }
 
+    fun getListInvite(it: User, callback: (listInvite: ArrayList<*>?) -> Unit) {
+        db.collection(ViewModelMain.USERS)
+            .document(it.email)
+            .get()
+            .addOnSuccessListener {
+                val list = it.get("invite")
+                if(list != null){
+                    list as ArrayList<*>
+                    Log.d("!!!isInv", "exception: ${list}")
+                    callback(list)
+                }
+            }.addOnFailureListener {  callback(null) }
+    }
+
     fun inviteUser(curUser: User, inviteEmail: String, callback: (isInvite: Boolean) -> Unit) {
-        if (inviteEmail == curUser.email) {
+        val curUserEmail = curUser.email
+        if (inviteEmail == curUserEmail) {
             callback(false)
             return
         }
-        val curUserEmail = curUser.email
+
 
         db.collection(ViewModelMain.USERS)
             .document(inviteEmail)
@@ -418,8 +438,8 @@ class FBFirestore(private val mainApp: MainApp) {
             .document(curUserEmail)
             .get()
             .addOnSuccessListener { doc ->
-                Log.d("!!!db", "Document2: ${doc.data?.get("email")} _ ${curUserEmail}")
 
+                Log.d("!!!dbqwe", "Document: Suss")
                 if (doc.data?.get("email").toString() != curUserEmail) {
                     invUserStep2(inviteEmail, curUser) {
                         callback(it)
@@ -427,56 +447,58 @@ class FBFirestore(private val mainApp: MainApp) {
                 } else {
                     callback(false)
                 }
-            }
+            }.addOnFailureListener {  Log.d("!!!dbqwe", "Document: Fail")}
     }
 
     fun invUserStep2(inviteEmail: String, curUser: User, callback: (isInvite: Boolean) -> Unit) {
         var emailTarget = ""
-        val mainCollection = db.collection(ViewModelMain.USERS)
+        val curUserEmail = curUser.email
         //query
-        mainCollection.whereEqualTo("email", inviteEmail)
+        db.collection(ViewModelMain.USERS)
+            .document(inviteEmail)
             .get()
-            .addOnSuccessListener { documents ->
-                for (document in documents) {
+            .addOnSuccessListener{
+                val list = it.get("invite")
+                var isCurUsEm = false
+                if(list != null){
+                    list as ArrayList<*>
+                    if(list.size > 0){
+                        list.forEach {inv->
+                            if(inv.toString() == curUserEmail) isCurUsEm = true
+                        }
+                    } else {
+                        inviteStep3(inviteEmail, curUser) { isInvite ->
+                            callback(isInvite)
+                        }
+                    }
 
-                    emailTarget = document.get("email").toString()
-                    Log.d("!!!db", "Document: ${emailTarget} _ ${document.data}")
+                } else {
+                    inviteStep3(inviteEmail, curUser){ isInvite->
+                        callback(isInvite)
+                    }
                 }
-                if (emailTarget.isNotEmpty() && emailTarget != curUser?.email) {
-                    mainCollection
-                        .document(inviteEmail)
-//            .update(hashMapOf<String, Any>(myEmail to inviteEmail))
-                        .update("forInvite", FieldValue.arrayUnion(curUser))
-//                        .set(curUser!!)
-                        .addOnSuccessListener {
-                            callback(true)
-                            Log.d("!!!db", "DocumentSnapshot successfully written!")
-                        }.addOnFailureListener { e -> Log.w("!!!db", "Error writing document", e) }
+
+                if(!isCurUsEm){
+                    inviteStep3(inviteEmail, curUser){ isInvite->
+                        callback(isInvite)
+                    }
                 } else {
                     callback(false)
                 }
             }
-            .addOnFailureListener { exception ->
-                Log.d("!!!isInv", "exception: ${exception}")
-            }
     }
 
+    private fun inviteStep3(inviteEmail: String, curUser: User, callback: (isInvite: Boolean) -> Unit) {
+        db.collection(ViewModelMain.USERS)
+            .document(inviteEmail)
+            .update("forInvite", FieldValue.arrayUnion(curUser))
+            .addOnSuccessListener {
+                db.collection(ViewModelMain.USERS)
+                    .document(curUser.email)
+                    .update("invite", FieldValue.arrayUnion(inviteEmail))
 
-
-
-//    fun getDialog2(myUser: User, callback: (listD: ArrayList<String>) -> Unit) {
-//        val listDialogs = arrayListOf<String>()
-//        val getDialogCollection = db.collection(ViewModelMain.USERS)
-//            .document(myUser.email)
-//            .collection(ViewModelMain.DIALOGS)
-//            .addSnapshotListener { value, error ->
-//                value?.forEach {
-//                    it.data.forEach { data ->
-//                        listDialogs.add(data.value.toString())
-//                        Log.d("!!!getDialog", "exceptionIF: ${data.value}")
-//                    }
-//                    callback(listDialogs)
-//                }
-//            }
-//    }
+                callback(true)
+                Log.d("!!!db", "DocumentSnapshot successfully written!")
+            }.addOnFailureListener { e -> Log.w("!!!db", "Error writing document", e) }
+    }
 }

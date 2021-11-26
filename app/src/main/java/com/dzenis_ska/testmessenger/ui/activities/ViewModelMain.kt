@@ -1,7 +1,6 @@
 package com.dzenis_ska.testmessenger.ui.activities
 
 import android.net.Uri
-import android.util.Log
 import androidx.lifecycle.*
 import com.dzenis_ska.testmessenger.db.*
 import com.dzenis_ska.testmessenger.ui.fragments.UserNameFragmentArgs
@@ -26,6 +25,19 @@ class ViewModelMain(private val auth: FBAuth, private val fbFirestore: FBFiresto
 
     val fa = auth.auth
 
+    fun cancelListenerWriting(args: UserNameFragmentArgs){
+        fbFirestore.cancelListenerWriting(args.message)
+    }
+
+    fun readWriting(args: UserNameFragmentArgs, callback: (writing: String) -> Unit) {
+        fbFirestore.readWriting(args.message){
+            callback(it)
+        }
+    }
+
+    fun writing(writing: String) {
+        getCurUser()?.let { fbFirestore.writing(it, writing)}
+    }
 
 
     fun reselectImage(byteArray: ByteArray, editMess: Messages.MyMessage, args: UserNameFragmentArgs, callback: (isRewrite: Boolean?) -> Unit) {
@@ -135,6 +147,10 @@ class ViewModelMain(private val auth: FBAuth, private val fbFirestore: FBFiresto
         }
     }
 
+    fun getListInvite(callback: (listInvite: ArrayList<*>?) -> Unit) {
+        getCurUser()?.let{ fbFirestore.getListInvite(it){lInv-> callback(lInv)} }
+    }
+
     fun clearInvUsersList(){
         _invUsers.value = mutableListOf()
     }
@@ -151,7 +167,6 @@ class ViewModelMain(private val auth: FBAuth, private val fbFirestore: FBFiresto
     }
 
     fun signIn(email: String, password: String, callback: (status: String?) -> Unit) {
-        Log.d("!!!init", "$password")
         auth.signIn(email, password) {
             callback(it)
         }
@@ -162,11 +177,9 @@ class ViewModelMain(private val auth: FBAuth, private val fbFirestore: FBFiresto
 
     fun setName(name: String, callback: (name: String?, status: Boolean?) -> Unit) {
         auth.setName(name) {
-            callback(name, it)
+            getCurUser()?.let{user-> fbFirestore.renameUser(name, user){callback(name, it)} }
         }
     }
-
-
 
 
     class MainViewModelFactory(private val auth: FBAuth, private val fbFirestore: FBFirestore) :
@@ -185,6 +198,11 @@ class ViewModelMain(private val auth: FBAuth, private val fbFirestore: FBFiresto
         const val USERS = "USERS"
         const val DIALOGS = "DIALOGS"
         const val PHOTO = "PHOTO"
+
+        //isWriting
+        const val WRITING = "writing..."
+        const val DELETING = "deleting..."
+        const val STOP = "STOP"
     }
 }
 

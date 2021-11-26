@@ -3,6 +3,7 @@ package com.dzenis_ska.testmessenger.ui.fragments
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.ArrayAdapter
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -25,6 +26,7 @@ class InvitationsFragment : Fragment(R.layout.fragment_invitations) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentInvitationsBinding.bind(view)
 
+        initSpinner()
         initAdapter()
         vm.listInviting()
 
@@ -33,13 +35,36 @@ class InvitationsFragment : Fragment(R.layout.fragment_invitations) {
         })
     }
 
+    private fun initSpinner(){
+        val listInv = arrayListOf<String>()
+        listInv.add("InviteList: ")
+        vm.getListInvite(){
+            it?.forEach { email->
+                listInv.add(email.toString())
+            }
+            if(listInv.size > 1){
+                initSpinnerAdapter(listInv)
+            }
+
+        }
+    }
+
+    private fun initSpinnerAdapter(listInv: ArrayList<String>) = with(binding!!){
+        val spinnerAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, listInv)
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinner.adapter = spinnerAdapter
+//        spinner.prompt = "InviteList"
+    }
+
+
+
+
     private fun initAdapter() = with(binding!!){
         adapter = InviteUsersAdapter(object : InvUserInterface{
             override fun onUserDecline(user: User) {
                 vm.declineUser(user)
             }
             override fun onUserAccept(user: User) {
-
                 vm.createDialog(user){
                     vm.declineUser(user)
                     Log.d("!!!isCreate", "$it")

@@ -74,6 +74,14 @@ class HomeFragment(): Fragment(R.layout.fragment_home) {
                 })
                 true
             }
+            R.id.changeName -> {
+                findNavController().navigate(R.id.enterNameFragment, null, navOptions {
+                    popUpTo(R.id.homeFragment){
+                        inclusive = true
+                    }
+                })
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
     }

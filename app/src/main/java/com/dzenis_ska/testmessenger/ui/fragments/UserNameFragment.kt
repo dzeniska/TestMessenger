@@ -2,6 +2,7 @@ package com.dzenis_ska.testmessenger.ui.fragments
 
 import android.net.Uri
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.util.Log
 import android.view.View
 import android.widget.Toast
@@ -71,19 +72,43 @@ class UserNameFragment : Fragment(R.layout.fragment_user_name) {
     }
 
     private fun initTextChanged() = with(binding!!){
-        etMessage.addTextChangedListener {
 
-            Log.d("!!!textChangedListener", "${it}")
+        viewModelMain.readWriting(args){
+            when (it){
+                ViewModelMain.WRITING-> tvWriting.text = ViewModelMain.WRITING
+                ViewModelMain.DELETING-> tvWriting.text = ViewModelMain.DELETING
+                ViewModelMain.STOP-> tvWriting.text = ""
+            }
+        }
+
+        var textLenght = etMessage.text.length
+        val timer = object : CountDownTimer(3000, 1000){
+            override fun onTick(millisUntilFinished: Long) {}
+            override fun onFinish() { viewModelMain.writing(ViewModelMain.STOP) }
+        }
+        etMessage.addTextChangedListener {
+            timer.cancel()
+            timer.start()
+            val oldLenght = textLenght
+            val newLenght = it.toString().length
+            val diff = newLenght - oldLenght
+            textLenght = newLenght
+            when (diff){
+                1-> viewModelMain.writing(ViewModelMain.WRITING)
+                -1-> viewModelMain.writing(ViewModelMain.DELETING)
+                else -> viewModelMain.writing(ViewModelMain.STOP)
+            }
         }
     }
 
     private fun showPhoto() {
         pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { contentUri ->
-
+            val rotation = ImageManager.imageRotationNew(contentUri, requireActivity())
             uri = contentUri
             if(contentUri != null){
                 Picasso.get()
                     .load(contentUri)
+                    .rotate(rotation.toFloat())
                     .into(binding!!.ivImage)
                 binding!!.ivImage.isVisible = true
             }
@@ -145,7 +170,6 @@ class UserNameFragment : Fragment(R.layout.fragment_user_name) {
     private fun initListMess() {
         viewModelMain.getListMess(args)
     }
-
 
 
     private fun initClick() = with(binding!!) {
@@ -280,6 +304,7 @@ class UserNameFragment : Fragment(R.layout.fragment_user_name) {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        viewModelMain.cancelListenerWriting(args)
         viewModelMain.cancelListenerMess(args)
         viewModelMain.clearListMess()
         binding = null
