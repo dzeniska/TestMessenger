@@ -42,6 +42,9 @@
         <entry key="..\:/android/others/TestMessenger/app/src/main/res/layout/item_invite.xml" value="0.4" />
         <entry key="..\:/android/others/TestMessenger/app/src/main/res/menu/home_menu.xml" value="0.12916666666666668" />
         <entry key="..\:/android/others/TestMessenger/app/src/main/res/menu/tabs_menu.xml" value="0.25416666666666665" />
+        <entry key="..\:/android/others/TestMessenger/app/src/main/res/mipmap-anydpi-v26/droid.xml" value="0.2703125" />
+        <entry key="..\:/android/others/TestMessenger/app/src/main/res/mipmap-anydpi-v26/droid_round.xml" value="0.2703125" />
+        <entry key="..\:/android/others/TestMessenger/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" value="0.2703125" />
       </map>
     </option>
   </component>
