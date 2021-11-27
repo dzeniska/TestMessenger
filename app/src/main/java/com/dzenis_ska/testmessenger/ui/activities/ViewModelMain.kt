@@ -181,6 +181,10 @@ class ViewModelMain(private val auth: FBAuth, private val fbFirestore: FBFiresto
         }
     }
 
+    fun getListUsers(callback: (listEmail: ArrayList<String>) -> Unit) {
+        fbFirestore.getListUsers{callback(it)}
+    }
+
 
     class MainViewModelFactory(private val auth: FBAuth, private val fbFirestore: FBFirestore) :
         ViewModelProvider.Factory {

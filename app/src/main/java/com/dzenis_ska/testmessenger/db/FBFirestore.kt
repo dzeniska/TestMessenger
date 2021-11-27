@@ -501,4 +501,17 @@ class FBFirestore(private val mainApp: MainApp) {
                 Log.d("!!!db", "DocumentSnapshot successfully written!")
             }.addOnFailureListener { e -> Log.w("!!!db", "Error writing document", e) }
     }
+
+    fun getListUsers(callback: (listEmail: ArrayList<String>) -> Unit) {
+        db.collection(ViewModelMain.USERS)
+            .get()
+            .addOnSuccessListener { query->
+                val listEmail = arrayListOf<String>()
+                query.forEach {
+                    listEmail.add(it.data["email"].toString())
+                    Log.d("!!!db", "${it.data["email"]}")
+                }
+                if(listEmail.size > 0) callback(listEmail)
+            }
+    }
 }
