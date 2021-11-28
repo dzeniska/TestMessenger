@@ -1,5 +1,6 @@
 package com.dzenis_ska.testmessenger.db
 
+import android.os.CountDownTimer
 import android.util.Log
 import android.widget.Toast
 import com.dzenis_ska.testmessenger.ui.MainApp
@@ -16,17 +17,22 @@ class FBAuth(private val mainApp: MainApp) {
 
     //Authentication
     val auth = Firebase.auth
+
     // CloudFirestore
     val db = Firebase.firestore
 
+    private val currUser = auth.currentUser
 
-    fun isCurUser(callback: (task: FirebaseUser?) -> Unit) =
-        if (Firebase.auth.currentUser != null){
-        callback(Firebase.auth.currentUser)
-    }else{
-        callback(null)
+    init{
+
     }
 
+    fun isCurUser(callback: (task: FirebaseUser?) -> Unit) =
+        if (currUser != null && currUser.isEmailVerified) {
+            callback(Firebase.auth.currentUser)
+        } else {
+            callback(null)
+        }
 
     fun setName(name: String, callback: (task: Boolean) -> Unit) {
         val user = Firebase.auth.currentUser
@@ -69,38 +75,44 @@ class FBAuth(private val mainApp: MainApp) {
     }
 
 
-
-    fun signIn(email: String, password: String, callback: (task: String) -> Unit) {
-        val auth = Firebase.auth
-        auth.createUserWithEmailAndPassword(email, password)
+    fun signInWithEmailAndPassword(
+        email: String,
+        password: String,
+        callback: (task: String) -> Unit
+    ){
+        auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    sendEmailVerification(task.result?.user!!)
-                } else {
-                    Log.d("!!!init", "else")
-                    if (task.exception is FirebaseAuthUserCollisionException) {
-                        val exception = task.exception as FirebaseAuthUserCollisionException
-                        if (exception.errorCode == ERROR_EMAIL_ALREADY_IN_USE) {
-                            Log.d("!!!error", exception.errorCode)
-                            signInWithEmail(email, password, auth) {
+                    if (currUser != null) {
+                        if (!currUser.isEmailVerified) {
+                            sendEmailVerification(currUser) {
                                 callback(it)
                             }
-                        }
-                    } else if (task.exception is FirebaseAuthInvalidCredentialsException) {
-                        val exception = task.exception as FirebaseAuthInvalidCredentialsException
-                        if (exception.errorCode == ERROR_INVALID_EMAIL) {
-                            callback(exception.errorCode)
-                            Log.d("!!!error", exception.errorCode)
-                        } else if (exception.errorCode == ERROR_WEAK_PASSWORD) {
-                            callback(exception.errorCode)
-                            Log.d("!!!error", exception.errorCode)
+                        } else {
+                            callback(LUCKY_ENTER)
                         }
                     }
-                    if (task.exception is FirebaseAuthWeakPasswordException) {
-                        val exception = task.exception as FirebaseAuthWeakPasswordException
-                        if (exception.errorCode == ERROR_WEAK_PASSWORD) {
+                } else {
+                    if (task.exception is FirebaseAuthInvalidCredentialsException) {
+                        val exception =
+                            task.exception as FirebaseAuthInvalidCredentialsException
+                        if (exception.errorCode == ERROR_INVALID_EMAIL) {
+                            callback(ERROR_INVALID_EMAIL)
+                        } else if (exception.errorCode == ERROR_WRONG_PASSWORD) {
+                            callback(ERROR_WRONG_PASSWORD)
+                        }
+                    } else if (task.exception is FirebaseAuthInvalidUserException) {
+                        val exception = task.exception as FirebaseAuthInvalidUserException
+                        if (exception.errorCode == ERROR_USER_NOT_FOUND) {
+                            createUserWithEmailAndPassword(email, password) {
+                                if (it == LUCKY_CREATE) signInWithEmailAndPassword(
+                                    email,
+                                    password
+                                ) { sign ->
+                                    callback(sign)
+                                }
+                            }
                             callback(exception.errorCode)
-                            Log.d("!!!error", exception.errorCode)
                         }
                     }
                 }
@@ -110,62 +122,67 @@ class FBAuth(private val mainApp: MainApp) {
             }
     }
 
-    private fun signInWithEmail(email: String, password: String, auth: FirebaseAuth, callback: (task: String) -> Unit) {
-                auth.signInWithEmailAndPassword(email, password).addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
-                        callback(LUCKY_ENTER)
-                    } else {
-                        if (task.exception is FirebaseAuthInvalidCredentialsException) {
-                            val exception =
-                                task.exception as FirebaseAuthInvalidCredentialsException
-                            if (exception.errorCode == ERROR_INVALID_EMAIL) {
-                                callback(exception.errorCode)
-                                Log.d("!!!error", exception.errorCode)
-                            } else if (exception.errorCode == ERROR_WRONG_PASSWORD) {
-                                callback(exception.errorCode)
-                                Log.d("!!!error", exception.errorCode)
-                            }
-                        } else if (task.exception is FirebaseAuthInvalidUserException) {
-                            val exception = task.exception as FirebaseAuthInvalidUserException
-                            if (exception.errorCode == ERROR_USER_NOT_FOUND) {
-                                callback(exception.errorCode)
-                                Log.d("!!!error", exception.errorCode)
-                            }
+    private fun createUserWithEmailAndPassword(
+        email: String,
+        password: String,
+        callback: (task: String) -> Unit
+    ) {
+        auth.createUserWithEmailAndPassword(email, password)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    callback(LUCKY_CREATE)
+                } else {
+                    Log.d("!!!signIn", "else")
+                    if (task.exception is FirebaseAuthUserCollisionException) {
+                        val exception = task.exception as FirebaseAuthUserCollisionException
+                        if (exception.errorCode == ERROR_EMAIL_ALREADY_IN_USE) {
+                            callback(ERROR_EMAIL_ALREADY_IN_USE)
+                        }
+                    } else if (task.exception is FirebaseAuthInvalidCredentialsException) {
+                        val exception = task.exception as FirebaseAuthInvalidCredentialsException
+                        if (exception.errorCode == ERROR_INVALID_EMAIL) {
+                            callback(ERROR_INVALID_EMAIL)
+                        } else if (exception.errorCode == ERROR_WEAK_PASSWORD) {
+                            callback(ERROR_WEAK_PASSWORD)
                         }
                     }
-                }.addOnFailureListener {
-                    callback("Exeption: ${it.message}")
-                    Log.d("!!!error", "Exeption: ${it.message}")
+                    if (task.exception is FirebaseAuthWeakPasswordException) {
+                        val exception = task.exception as FirebaseAuthWeakPasswordException
+                        if (exception.errorCode == ERROR_WEAK_PASSWORD) {
+                            callback(ERROR_WEAK_PASSWORD)
+                        }
+                    }
                 }
-
-
+            }.addOnFailureListener {
+                callback("Exeption: ${it.message}")
+                Log.d("!!!error", "Exeption: ${it.message}")
+            }
     }
 
-
-    private fun sendEmailVerification(user: FirebaseUser) {
-        user.sendEmailVerification().addOnCompleteListener() { task ->
+    private fun sendEmailVerification(user: FirebaseUser, callback: (task: String) -> Unit) {
+        user.sendEmailVerification().addOnCompleteListener { task ->
             if (task.isSuccessful) {
-                Toast.makeText(
-                    mainApp,
-                    "Проверьте почтовый ящик",
-                    Toast.LENGTH_LONG
-                ).show()
+                callback(CHANGE_EMAIL)
             } else {
-                Toast.makeText(
-                    mainApp,
-                    "Error!",
-                    Toast.LENGTH_SHORT
-                ).show()
+                callback("Error Email verification!")
             }
         }
     }
 
-    companion object{
+
+
+    companion object {
         const val ERROR_EMAIL_ALREADY_IN_USE = "ERROR_EMAIL_ALREADY_IN_USE"
         const val ERROR_INVALID_EMAIL = "ERROR_INVALID_EMAIL"
         const val ERROR_WRONG_PASSWORD = "ERROR_WRONG_PASSWORD"
         const val ERROR_WEAK_PASSWORD = "ERROR_WEAK_PASSWORD"
         const val ERROR_USER_NOT_FOUND = "ERROR_USER_NOT_FOUND"
         const val LUCKY_ENTER = "Удачный вход!"
+        const val LUCKY_CREATE = "Account created!"
+
+
+        const val CHANGE_EMAIL = "Проверьте почтовый ящик"
+
+
     }
 }

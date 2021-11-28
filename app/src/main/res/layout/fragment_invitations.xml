@@ -19,7 +19,7 @@
     </androidx.recyclerview.widget.RecyclerView>
 
     <TextView
-        android:id="@+id/textView4"
+        android:id="@+id/tvInvitations"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Invitations"
@@ -39,5 +39,15 @@
         app:layout_constraintBottom_toBottomOf="@+id/rcViewInvite"
         app:layout_constraintEnd_toEndOf="parent"
         android:spinnerMode="dialog"/>
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:indeterminateTint="@color/theme_color"
+        app:layout_constraintEnd_toEndOf="@+id/tvInvitations"
+        app:layout_constraintStart_toStartOf="@+id/tvInvitations"
+        app:layout_constraintTop_toBottomOf="@+id/tvInvitations" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

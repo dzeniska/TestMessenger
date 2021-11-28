@@ -25,6 +25,7 @@
         android:layout_marginTop="@dimen/margin"
         android:layout_marginStart="@dimen/margin_start_end"
         android:layout_marginEnd="@dimen/margin_start_end"
+        android:lines="1"
         android:background="@drawable/background_edit_text"
         android:hint="@string/email"/>
 
@@ -36,6 +37,7 @@
         android:layout_marginTop="@dimen/margin"
         android:layout_marginStart="@dimen/margin_start_end"
         android:layout_marginEnd="@dimen/margin_start_end"
+        android:lines="1"
         android:background="@drawable/background_edit_text"
         android:hint="@string/password"/>
 
@@ -53,5 +55,13 @@
         android:textColor="@color/black"
         android:textStyle="bold"
         android:gravity="center"/>
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyle"
+        android:visibility="gone"
+        android:indeterminateTint="@color/white"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 
 </LinearLayout>

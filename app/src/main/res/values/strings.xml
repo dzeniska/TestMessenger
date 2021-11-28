@@ -23,4 +23,7 @@
     <string name="accept">Accept</string>
     <string name="listInvite">Список отправленных приглашений</string>
     <string name="listMyInvite">Мои приглашения</string>
+
+    <string name="noDialogs">No dialogs…</string>
+    <string name="noInvitations">No invitations…</string>
 </resources>

@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.ArrayAdapter
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -30,7 +31,14 @@ class InvitationsFragment : Fragment(R.layout.fragment_invitations) {
         initAdapter()
         vm.listInviting()
 
+        initViewModel()
+
+    }
+
+    private fun initViewModel() = with(binding!!){
         vm.invUsers.observe(viewLifecycleOwner, {
+            progressBar.isVisible = false
+            if(it.size < 1) tvInvitations.text = getString(R.string.noDialogs)
             adapter?.users = it as List<User>
         })
     }

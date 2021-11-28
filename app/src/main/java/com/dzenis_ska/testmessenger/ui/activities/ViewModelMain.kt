@@ -167,9 +167,12 @@ class ViewModelMain(private val auth: FBAuth, private val fbFirestore: FBFiresto
     }
 
     fun signIn(email: String, password: String, callback: (status: String?) -> Unit) {
-        auth.signIn(email, password) {
+        auth.signInWithEmailAndPassword(email, password){
             callback(it)
         }
+//        auth.signIn(email, password) {
+//            callback(it)
+//        }
     }
 
     fun isEmailVerified() = auth.auth.currentUser?.isEmailVerified

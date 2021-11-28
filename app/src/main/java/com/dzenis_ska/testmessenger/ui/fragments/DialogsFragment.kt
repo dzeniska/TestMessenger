@@ -3,6 +3,7 @@ package com.dzenis_ska.testmessenger.ui.fragments
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -35,13 +36,16 @@ class DialogsFragment : Fragment(R.layout.fragment_dialogs) {
         viewModelMain.getDialogsList()
     }
 
-    private fun initViewModel() {
+    private fun initViewModel() = with(binding!!) {
         viewModelMain.listDialogs.observe(viewLifecycleOwner, {
+            progressBar.isVisible = false
+            if(it.size < 1) tvDialogs.text = getString(R.string.noDialogs)
             adapter?.dialogs = it
         })
     }
 
     private fun initAdapter() = with(binding!!) {
+        progressBar.isVisible = true
         adapter = DialogsAdapter( object : ChooseUserInterface{
             override fun chooseUser(message: Dialog) {
                 val direction = HomeFragmentDirections.actionHomeFragmentToUserNameFragment(message)
