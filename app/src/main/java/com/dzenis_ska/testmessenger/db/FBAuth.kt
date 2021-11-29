@@ -74,7 +74,7 @@ class FBAuth(private val mainApp: MainApp) {
         }
     }
 
-
+    //todo need to more check task.exception
     fun signInWithEmailAndPassword(
         email: String,
         password: String,

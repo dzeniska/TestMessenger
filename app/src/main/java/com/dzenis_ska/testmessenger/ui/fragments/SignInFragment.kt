@@ -23,7 +23,7 @@ class SignInFragment : Fragment(R.layout.fragment_sign_in) {
 
     private var binding: FragmentSignInBinding? = null
     private val args by navArgs<SignInFragmentArgs>()
-    var timer: CountDownTimer? = null
+//    var timer: CountDownTimer? = null
 
 
     private val viewModelMain: ViewModelMain by activityViewModels {
@@ -36,10 +36,10 @@ class SignInFragment : Fragment(R.layout.fragment_sign_in) {
 
         initClick()
         logOut()
-        initTimer()
+//        initTimer()
     }
 
-    private fun initTimer() = with(binding!!){
+    /*private fun initTimer() = with(binding!!){
         timer = object : CountDownTimer(5000, 1000){
             override fun onTick(millisUntilFinished: Long) {}
             override fun onFinish() {
@@ -48,7 +48,7 @@ class SignInFragment : Fragment(R.layout.fragment_sign_in) {
                 Toast.makeText(context, "Что-то пошло не так ( \n x..ёвый Internet", Toast.LENGTH_LONG).show()
             }
         }
-    }
+    }*/
 
     private fun initClick() = with(binding!!) {
 
@@ -89,9 +89,9 @@ class SignInFragment : Fragment(R.layout.fragment_sign_in) {
             if(!CheckNetwork.isNetworkAvailable(context)) return
             bSignIn.isEnabled = false
             progressBar.isVisible = true
-            timer?.start()
+//            timer?.start()
             viewModelMain.signIn(email, pass) { mess->
-                timer?.cancel()
+//                timer?.cancel()
                 bSignIn.isEnabled = true
                 progressBar.isVisible = false
                 if (mess == FBAuth.LUCKY_ENTER) {
