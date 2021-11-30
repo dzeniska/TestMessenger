@@ -166,7 +166,7 @@ class FBAuth(private val mainApp: MainApp) {
             if (task.isSuccessful) {
                 callback(CHANGE_EMAIL)
             } else {
-                callback("Error Email verification!")
+                callback(ERROR_EMAIL_VERIFICATION)
             }
         }
     }
@@ -184,6 +184,7 @@ class FBAuth(private val mainApp: MainApp) {
 
 
         const val CHANGE_EMAIL = "Проверьте почтовый ящик"
+        const val ERROR_EMAIL_VERIFICATION = "Чекни свой почтовый ящик говорю!"
 
 
     }

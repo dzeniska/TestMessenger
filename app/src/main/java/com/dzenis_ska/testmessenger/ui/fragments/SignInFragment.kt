@@ -89,9 +89,7 @@ class SignInFragment : Fragment(R.layout.fragment_sign_in) {
             if(!CheckNetwork.isNetworkAvailable(context)) return
             bSignIn.isEnabled = false
             progressBar.isVisible = true
-//            timer?.start()
             viewModelMain.signIn(email, pass) { mess->
-//                timer?.cancel()
                 Log.d("!!!db", "${mess}")
                 bSignIn.isEnabled = true
                 progressBar.isVisible = false
@@ -101,7 +99,7 @@ class SignInFragment : Fragment(R.layout.fragment_sign_in) {
                         val name = viewModelMain.fa.currentUser?.displayName
                         if(name == null){
                             findNavController().navigate(R.id.enterNameFragment)
-                            Toast.makeText(context, mess, Toast.LENGTH_LONG).show()
+                            Toast.makeText(context, "Введите имя!", Toast.LENGTH_LONG).show()
                         } else {
                             findNavController().navigate(R.id.homeFragment, null,
                                 navOptions {
@@ -116,8 +114,11 @@ class SignInFragment : Fragment(R.layout.fragment_sign_in) {
                             .show()
                     }
                 } else {
-                    Toast.makeText(context, "$mess", Toast.LENGTH_LONG)
-                        .show()
+                    when (mess){
+                        FBAuth.CHANGE_EMAIL -> Toast.makeText(context, FBAuth.CHANGE_EMAIL, Toast.LENGTH_LONG)
+                            .show()
+                        FBAuth.ERROR_EMAIL_VERIFICATION -> Toast.makeText(context, FBAuth.ERROR_EMAIL_VERIFICATION, Toast.LENGTH_LONG).show()
+                    }
                 }
             }
         } else {
