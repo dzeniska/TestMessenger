@@ -184,7 +184,7 @@ class FBAuth(private val mainApp: MainApp) {
 
 
         const val CHANGE_EMAIL = "Проверьте почтовый ящик"
-        const val ERROR_EMAIL_VERIFICATION = "Чекни свой почтовый ящик говорю!"
+        const val ERROR_EMAIL_VERIFICATION = "Чекни свой почтовый ящик говорю!)"
 
 
     }
