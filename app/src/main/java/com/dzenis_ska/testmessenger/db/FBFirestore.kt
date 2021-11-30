@@ -4,6 +4,7 @@ import android.net.Uri
 import android.util.Log
 import com.dzenis_ska.testmessenger.ui.MainApp
 import com.dzenis_ska.testmessenger.ui.activities.ViewModelMain
+import com.google.firebase.Timestamp
 
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FieldValue
@@ -156,21 +157,25 @@ class FBFirestore(private val mainApp: MainApp) {
             .addOnFailureListener { callback(false) }
     }
 
-    fun uploadImage(biteArray: ByteArray, time: String, callback: (uri: Uri?) -> Unit) {
-        st.reference.child(ViewModelMain.PHOTO).child(time).putBytes(biteArray)
-            .addOnSuccessListener {
-                getPhotoUrl(time) { callback(it) }
-            }.addOnFailureListener {
-                callback(null)
-            }
+    fun uploadImage(biteArray: ByteArray, callback: (uri: Uri?, timeStamp: String) -> Unit) {
+        getServerTimeStamp { timeStamp ->
+            st.reference.child(ViewModelMain.PHOTO).child(timeStamp).putBytes(biteArray)
+                .addOnSuccessListener {
+                    getPhotoUrl(timeStamp) { uri ->
+                        callback(uri, timeStamp)
+                    }
+                }.addOnFailureListener {
+                    callback(null, timeStamp)
+                }
+        }
     }
 
-    private fun getPhotoUrl(time: String, callbackUri: (isUpload: Uri?) -> Unit) {
-        st.reference.child(ViewModelMain.PHOTO).child(time).downloadUrl.addOnSuccessListener { url ->
-            callbackUri(url)
-        }.addOnFailureListener {
-            callbackUri(null)
-        }
+    private fun getPhotoUrl(timeStamp: String, callbackUri: (uri: Uri?) -> Unit) {
+            st.reference.child(ViewModelMain.PHOTO).child(timeStamp).downloadUrl.addOnSuccessListener { uri ->
+                callbackUri(uri)
+            }.addOnFailureListener {
+                callbackUri(null)
+            }
     }
 
     fun isRead(d: Dialog) {
@@ -212,7 +217,6 @@ class FBFirestore(private val mainApp: MainApp) {
                             it.data.get("photoUrl").toString()
                         )
                     )
-                    Log.d("!!!getMessages", "exceptionIF: ${it.data.get("name")}")
                 }
                 callback(listMess)
             }
@@ -222,13 +226,51 @@ class FBFirestore(private val mainApp: MainApp) {
         val query = db.collection(ViewModelMain.DIALOGS)
             .document(message.dialogName)
             .collection(message.dialogName)
-        val registration = query.addSnapshotListener { snapshots, e -> }
+        val registration = query.addSnapshotListener { _, _ -> }
         registration.remove()
     }
 
 
-    fun sendMessage(text: String, user: User, message: Dialog, photoUrl: Uri?, time: String, callback: (isSend: Boolean) -> Unit) {
+    fun getServerTimeStamp(callback: (timeStamp: String) -> Unit) {
+        val docRef = db.collection("time")
+            .document("time")
+        val updates = hashMapOf<String, Any>(
+            "timestamp" to FieldValue.serverTimestamp()
+        )
+        docRef.set(updates).addOnSuccessListener {
+            docRef.get().addOnSuccessListener {
+                val time = it.get("timestamp") as Timestamp
+                callback("${time.seconds}" + time.nanoseconds.toString().substring(0..2))
+            }.addOnFailureListener { callback(System.currentTimeMillis().toString())}
+        }.addOnFailureListener { callback(System.currentTimeMillis().toString()) }
+    }
 
+
+    fun sendMessage(
+        text: String,
+        user: User,
+        message: Dialog,
+        photoUrl: Uri?,
+        time: String?,
+        callback: (isSend: Boolean) -> Unit
+    ) {
+        if(time == null) {
+            getServerTimeStamp{timeStamp->
+                sendMessSub(text, user, message, photoUrl, timeStamp){callback(it)}
+            }
+        } else {
+            sendMessSub(text, user, message, photoUrl, time){callback(it)}
+        }
+    }
+
+    private fun sendMessSub(
+        text: String,
+        user: User,
+        message: Dialog,
+        photoUrl: Uri?,
+        time: String,
+        callback: (isSend: Boolean) -> Unit
+    ){
         val mes = Messages.MyMessage(
             user.name,
             user.email,
@@ -238,19 +280,21 @@ class FBFirestore(private val mainApp: MainApp) {
             photoUrl.toString()
         )
 
-
         db.collection(ViewModelMain.DIALOGS)
             .document(message.dialogName)
             .collection(message.dialogName)
             .document(time)
             .set(mes)
             .addOnSuccessListener {
+
                 incrementMess(message, user)
                 sendTimeForSortDialogs(message, user, time)
                 callback(true)
             }
             .addOnFailureListener { callback(false) }
     }
+
+
 
     private fun sendTimeForSortDialogs(message: Dialog, user: User, time: String) {
         db.collection(ViewModelMain.USERS)
@@ -287,7 +331,6 @@ class FBFirestore(private val mainApp: MainApp) {
 
                 result.forEach {
                     val mes = it.data as HashMap<*, *>
-                    Log.d("!!!getDialog", "exceptionIF: ${mes.get("name")}")
                     listDialogs.add(
                         Dialog(
                             mes.get("name").toString(),

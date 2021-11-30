@@ -57,9 +57,9 @@ class ViewModelMain(private val auth: FBAuth, private val fbFirestore: FBFiresto
         getCurUser()?.let { fbFirestore.editText(editText, editMess, args.message){callback(it)} }
     }
 
-    fun uploadImage(biteArray: ByteArray, time: String, callback: (uri: Uri?) -> Unit) {
-        fbFirestore.uploadImage(biteArray, time){uri->
-            callback(uri)
+    fun uploadImage(biteArray: ByteArray, callback: (uri: Uri?, timeStamp: String) -> Unit) {
+        fbFirestore.uploadImage(biteArray){isUpload, timeStamp ->
+            callback(isUpload, timeStamp)
         }
     }
 
@@ -82,7 +82,7 @@ class ViewModelMain(private val auth: FBAuth, private val fbFirestore: FBFiresto
         fbFirestore.cancelListenerMess(args.message)
     }
 
-    fun sendMessage(text: String, args: UserNameFragmentArgs, photoUrl: Uri?, time: String, callback: (isSend: Boolean) -> Unit) {
+    fun sendMessage(text: String, args: UserNameFragmentArgs, photoUrl: Uri?, time: String?, callback: (isSend: Boolean) -> Unit) {
         getCurUser()?.let {
             fbFirestore.sendMessage(text, it, args.message, photoUrl, time) { isSend -> callback(isSend) }
         }

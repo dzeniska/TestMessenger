@@ -131,6 +131,7 @@ class UserNameFragment : Fragment(R.layout.fragment_user_name) {
         val listMess = arrayListOf<Messages>()
         var dateCh = 0
         arrayList.forEach {
+            Log.d("!!!returnDateDay", "${it.time}")
             val day = returnDateDay(it.time.toLong())
 
             if (dateCh != day && dateCh != 0) {
@@ -219,16 +220,16 @@ class UserNameFragment : Fragment(R.layout.fragment_user_name) {
                 }
             }
         } else {
-            val time = System.currentTimeMillis().toString()
+//            val time = System.currentTimeMillis().toString()
             if(!ivImage.isVisible){
-                sendMess(null, time)
+                sendMess(null, null)
             } else {
                 prBarImage.isVisible = true
                 job = CoroutineScope(Dispatchers.Main).launch {
                     val byteArray = photoFromImageView()
-                    viewModelMain.uploadImage(byteArray, time) {
+                    viewModelMain.uploadImage(byteArray) {uri, timeStamp ->
                         prBarImage.isVisible = false
-                        sendMess(it, time)
+                        sendMess(uri, timeStamp)
                     }
                 }
             }
@@ -249,7 +250,7 @@ class UserNameFragment : Fragment(R.layout.fragment_user_name) {
         return@withContext byteArray
     }
 
-    private fun sendMess(photoUrl: Uri?, time: String) = with(binding!!){
+    private fun sendMess(photoUrl: Uri?, time: String?) = with(binding!!){
         if(photoUrl == null){
             if (etMessage.text.isNotEmpty()) {
                 subSendMess(photoUrl, time)
@@ -259,7 +260,7 @@ class UserNameFragment : Fragment(R.layout.fragment_user_name) {
         }
 
     }
-    private fun subSendMess(photoUrl: Uri?, time: String) = with(binding!!) {
+    private fun subSendMess(photoUrl: Uri?, time: String?) = with(binding!!) {
         prBarMess.isVisible = true
         viewModelMain.sendMessage(etMessage.text.toString(), args, photoUrl, time) {
             if (it) Toast.makeText(context, "Ok!", Toast.LENGTH_LONG).show()
