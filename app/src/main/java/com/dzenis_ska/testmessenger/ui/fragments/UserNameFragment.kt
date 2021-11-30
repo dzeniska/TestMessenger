@@ -23,6 +23,7 @@ import com.dzenis_ska.testmessenger.ui.activities.ViewModelMain
 import com.dzenis_ska.testmessenger.ui.adapters.EditMessage
 import com.dzenis_ska.testmessenger.ui.adapters.MessageAdapter
 import com.dzenis_ska.testmessenger.utils.ImageManager
+import com.google.firebase.Timestamp
 import com.squareup.picasso.Picasso
 import kotlinx.coroutines.*
 import java.text.SimpleDateFormat
@@ -131,9 +132,7 @@ class UserNameFragment : Fragment(R.layout.fragment_user_name) {
         val listMess = arrayListOf<Messages>()
         var dateCh = 0
         arrayList.forEach {
-            Log.d("!!!returnDateDay", "${it.time}")
             val day = returnDateDay(it.time.toLong())
-
             if (dateCh != day && dateCh != 0) {
                 val mess = Messages.TimeSpace(
                     it.time

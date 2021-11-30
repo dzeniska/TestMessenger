@@ -208,6 +208,7 @@ class FBFirestore(private val mainApp: MainApp) {
                 val listMess = arrayListOf<Messages.MyMessage>()
                 value?.forEach {
                     listMess.add(
+
                         Messages.MyMessage(
                             it.data.get("name").toString(),
                             it.data.get("email").toString(),
