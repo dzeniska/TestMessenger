@@ -21,18 +21,18 @@ class FBAuth(private val mainApp: MainApp) {
     // CloudFirestore
     val db = Firebase.firestore
 
-    private val currUser = auth.currentUser
-
     init{
-
+        Log.d("!!!signInWithEmailAndPassword1", "${Firebase.auth.currentUser}")
     }
 
-    fun isCurUser(callback: (task: FirebaseUser?) -> Unit) =
+    fun isCurUser(callback: (task: FirebaseUser?) -> Unit){
+        val currUser = auth.currentUser
         if (currUser != null && currUser.isEmailVerified) {
-            callback(Firebase.auth.currentUser)
+            callback(currUser)
         } else {
             callback(null)
         }
+    }
 
     fun setName(name: String, callback: (task: Boolean) -> Unit) {
         val user = Firebase.auth.currentUser
@@ -74,7 +74,7 @@ class FBAuth(private val mainApp: MainApp) {
         }
     }
 
-    //todo need to more check task.exception
+    //todo kosyak
     fun signInWithEmailAndPassword(
         email: String,
         password: String,
@@ -83,9 +83,11 @@ class FBAuth(private val mainApp: MainApp) {
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    if (currUser != null) {
-                        if (!currUser.isEmailVerified) {
-                            sendEmailVerification(currUser) {
+                    val user = Firebase.auth.currentUser
+                    Log.d("!!!signInWithEmailAndPassword", "${user}")
+                    if (user != null) {
+                        if (!user.isEmailVerified) {
+                            sendEmailVerification(user) {
                                 callback(it)
                             }
                         } else {

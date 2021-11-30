@@ -92,6 +92,7 @@ class SignInFragment : Fragment(R.layout.fragment_sign_in) {
 //            timer?.start()
             viewModelMain.signIn(email, pass) { mess->
 //                timer?.cancel()
+                Log.d("!!!db", "${mess}")
                 bSignIn.isEnabled = true
                 progressBar.isVisible = false
                 if (mess == FBAuth.LUCKY_ENTER) {
