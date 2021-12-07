@@ -36,19 +36,10 @@ class SignInFragment : Fragment(R.layout.fragment_sign_in) {
 
         initClick()
         logOut()
-//        initTimer()
+
     }
 
-    /*private fun initTimer() = with(binding!!){
-        timer = object : CountDownTimer(5000, 1000){
-            override fun onTick(millisUntilFinished: Long) {}
-            override fun onFinish() {
-                bSignIn.isEnabled = true
-                progressBar.isVisible = false
-                Toast.makeText(context, "Что-то пошло не так ( \n x..ёвый Internet", Toast.LENGTH_LONG).show()
-            }
-        }
-    }*/
+
 
     private fun initClick() = with(binding!!) {
 

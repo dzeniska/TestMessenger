@@ -22,11 +22,12 @@ class DialogsAdapter(private val chooseUserInterface: ChooseUserInterface ) : Re
     var dialogs: List<Dialog> = emptyList()
         set(newValue) {
 
-            val diffResult = DiffUtil.calculateDiff(DiffUtilDialogs(dialogs, newValue))
+            val diffResult = DiffUtil.calculateDiff(DiffUtilDialogs(field, newValue))
+            field = newValue
             diffResult.dispatchUpdatesTo(this)
 
-            field = newValue
-            notifyDataSetChanged()
+
+//            notifyDataSetChanged()
         }
 
     override fun onClick(v: View) {
@@ -50,6 +51,7 @@ class DialogsAdapter(private val chooseUserInterface: ChooseUserInterface ) : Re
         val dialog = dialogs[position]
 
         with(holder.binding) {
+
             root.tag = dialog
 
             tvUName.text = dialog.name
@@ -66,7 +68,6 @@ class DialogsAdapter(private val chooseUserInterface: ChooseUserInterface ) : Re
                 tvCountUnreadMess.isVisible = true
                 tvCountUnreadMess.text = "+9"
             }
-
 
             val sdf = SimpleDateFormat("HH:mm")
             val resultDate = Date(dialog.time.toLong())
