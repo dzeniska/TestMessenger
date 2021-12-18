@@ -14,6 +14,7 @@ import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.navArgs
+import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.dzenis_ska.testmessenger.R
 import com.dzenis_ska.testmessenger.databinding.FragmentUserNameBinding
@@ -120,6 +121,7 @@ class UserNameFragment : Fragment(R.layout.fragment_user_name) {
         viewModelMain.listMess.observe(viewLifecycleOwner, {
             val listMess = changeClass(it)
             adapter?.messages = listMess
+            binding!!.rcViewMessage.scrollToPosition(0)
             isRead()
         })
     }
@@ -128,7 +130,7 @@ class UserNameFragment : Fragment(R.layout.fragment_user_name) {
         viewModelMain.isRead(args.message)
     }
 
-    private fun changeClass(arrayList: ArrayList<Messages.MyMessage>): ArrayList<Messages> {
+    private fun changeClass(arrayList: ArrayList<Messages.MyMessage>): List<Messages> {
         val listMess = arrayListOf<Messages>()
         var dateCh = 0
         arrayList.forEach {
@@ -298,8 +300,11 @@ class UserNameFragment : Fragment(R.layout.fragment_user_name) {
                 }
             }
         })
+//        layoutManager.stackFromEnd
         rcViewMessage.layoutManager = layoutManager
         rcViewMessage.adapter = adapter
+        val itemAnimator = rcViewMessage.itemAnimator
+        if(itemAnimator is DefaultItemAnimator){itemAnimator.supportsChangeAnimations = false}
     }
 
     override fun onDestroyView() {

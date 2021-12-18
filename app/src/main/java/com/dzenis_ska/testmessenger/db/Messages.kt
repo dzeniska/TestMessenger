@@ -5,9 +5,10 @@ import kotlinx.parcelize.Parcelize
 
 
 sealed class Messages
-//    (
-//    val times: String
-//)
+    (
+    val times: String,
+    var readed: Boolean
+)
 {
     @Parcelize
     data class MyMessage(
@@ -18,12 +19,12 @@ sealed class Messages
         val isRead: Boolean = false,
         val time: String,
         val photoUrl: String? = null
-    ): Messages(), Parcelable
+    ): Messages(time, isRead), Parcelable
 
     @Parcelize
     data class TimeSpace(
         val time: String
-    ): Messages(), Parcelable
+    ): Messages(time, false), Parcelable
 
     @Parcelize
     data class HisMessage(
@@ -34,5 +35,5 @@ sealed class Messages
         val isRead: Boolean = false,
         val time: String,
         val photoUrl: String? = null
-    ): Messages(), Parcelable
+    ): Messages(time, isRead), Parcelable
 }

@@ -1,5 +1,6 @@
 package com.dzenis_ska.testmessenger.ui.adapters
 
+import android.os.Message
 import android.util.Log
 import android.view.*
 import android.widget.PopupMenu
@@ -26,14 +27,12 @@ interface EditMessage {
 
 class MessageAdapter(private val editMessage: EditMessage) : RecyclerView.Adapter<MessageAdapter.MessageViewHolder>(), View.OnLongClickListener {
 
-    var messages: MutableList<Messages> = mutableListOf()
+    var messages: List<Messages> = listOf()
         set(newValue) {
-
-            val diffResult = DiffUtil.calculateDiff(DiffUtilMessage(messages, newValue))
+            val diffResult = DiffUtil.calculateDiff(DiffUtilMessage(field , newValue))
             diffResult.dispatchUpdatesTo(this)
-
             field = newValue
-            notifyDataSetChanged()
+//            notifyDataSetChanged()
         }
 
     override fun onLongClick(v: View): Boolean{

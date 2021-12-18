@@ -74,7 +74,6 @@ class FBAuth(private val mainApp: MainApp) {
         }
     }
 
-    //todo kosyak
     fun signInWithEmailAndPassword(
         email: String,
         password: String,

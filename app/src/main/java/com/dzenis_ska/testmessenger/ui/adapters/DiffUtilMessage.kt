@@ -5,20 +5,23 @@ import com.dzenis_ska.testmessenger.db.Dialog
 import com.dzenis_ska.testmessenger.db.Messages
 
 class DiffUtilMessage(val oldList: List<Messages>, val newList: List<Messages>): DiffUtil.Callback() {
-    override fun getOldListSize(): Int {
-        return oldList.size
-    }
 
-    override fun getNewListSize(): Int {
-        return newList.size
-    }
+    override fun getOldListSize(): Int = oldList.size
+
+
+    override fun getNewListSize(): Int = newList.size
+
 
     override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-        return oldList[oldItemPosition] == newList[newItemPosition]
+        val oldMess = oldList[oldItemPosition]
+        val newMess = newList[newItemPosition]
+        return oldMess.times == newMess.times
     }
 
     override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-        return oldList[oldItemPosition] == newList[newItemPosition]
+        val oldMess = oldList[oldItemPosition]
+        val newMess = newList[newItemPosition]
+        return oldMess.readed == newMess.readed
     }
 
 }
